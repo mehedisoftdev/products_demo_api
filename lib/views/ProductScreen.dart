@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:products_view_demo/model/product.dart';
 import 'package:products_view_demo/service/api_service.dart';
+import 'package:products_view_demo/viewmodel/product_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class ProductScreen extends StatefulWidget {
+class ProductScreen extends StatelessWidget {
   const ProductScreen({super.key});
 
   @override
-  State<ProductScreen> createState() => _ProductScreenState();
-}
-
-class _ProductScreenState extends State<ProductScreen> {
-  late Future<List<Product>> _products;
-
-  @override
-  void initState() {
-    super.initState();
-    _products = ApiService.fetchProducts();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // access the viewmodel using provider
+    final productViewModel = Provider.of<ProductViewModel>(context);
+    // fetch products if not already fetched
+    if (productViewModel.isLoading) {
+      productViewModel.fetchProducts();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -27,40 +23,33 @@ class _ProductScreenState extends State<ProductScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blue,
-        centerTitle: true,
       ),
-      body: FutureBuilder<List<Product>>(
-        future: _products,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error : ${snapshot.error}'),
-            );
-          } else if (snapshot.hasData) {
-            return GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8.0,
-                  mainAxisSpacing: 8.0,
-                  childAspectRatio: 0.75),
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                final product = snapshot.data![index];
-                return ProductCard(product: product);
-              },
-            );
-          } else {
-            return const Center(
-              child: Text('No products found'),
-            );
-          }
-        },
-      ),
+      body: Consumer<ProductViewModel>(builder: (context, viewModel, child) {
+        if (viewModel.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (viewModel.errorMessage.isNotEmpty) {
+          // has error
+          return Center(
+            child: Text(viewModel.errorMessage),
+          );
+        } else {
+          return GridView.builder(
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.75),
+            itemCount: viewModel.products.length,
+            itemBuilder: (context, index) {
+              final product = viewModel.products[index];
+              return ProductCard(product: product);
+            },
+          );
+        }
+      }),
     );
   }
 }
