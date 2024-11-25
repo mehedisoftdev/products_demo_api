@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:products_view_demo/model/product.dart';
 import 'package:products_view_demo/viewmodel/product_viewmodel.dart';
@@ -16,7 +17,8 @@ class ProductScreen extends StatelessWidget {
     }
 
     // Get orientation
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
       appBar: AppBar(
@@ -37,20 +39,39 @@ class ProductScreen extends StatelessWidget {
             child: Text(viewModel.errorMessage),
           );
         } else {
-          return GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isLandscape ? 3 : 2, // Dynamic column count
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: isLandscape ? 1.5 : 0.8, // Adjust ratio for landscape
-            ),
-            itemCount: viewModel.products.length,
-            itemBuilder: (context, index) {
-              final product = viewModel.products[index];
-              return ProductCard(product: product, isLandscape: isLandscape);
-            },
-          );
+          if (Platform.isWindows) {
+            return GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5, // Dynamic column count
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1, // Adjust ratio for landscape
+              ),
+              itemCount: viewModel.products.length,
+              itemBuilder: (context, index) {
+                final product = viewModel.products[index];
+                return ProductCard(product: product, isLandscape: isLandscape);
+              },
+            );
+          } else {
+            // for other screens
+            return GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isLandscape ? 3 : 2, // Dynamic column count
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio:
+                    isLandscape ? 1.5 : 0.8, // Adjust ratio for landscape
+              ),
+              itemCount: viewModel.products.length,
+              itemBuilder: (context, index) {
+                final product = viewModel.products[index];
+                return ProductCard(product: product, isLandscape: isLandscape);
+              },
+            );
+          }
         }
       }),
     );
@@ -62,13 +83,21 @@ class ProductCard extends StatelessWidget {
   final Product product;
   final bool isLandscape;
 
-  const ProductCard({super.key, required this.product, required this.isLandscape});
+  const ProductCard(
+      {super.key, required this.product, required this.isLandscape});
 
   @override
   Widget build(BuildContext context) {
     final cardHeight = isLandscape
         ? MediaQuery.of(context).size.height * 0.4
         : MediaQuery.of(context).size.height * 0.3; // Adjust height dynamically
+
+    var _height = cardHeight * 0.3;
+    if (Platform.isWindows) {
+      _height = cardHeight * 0.6;
+    } else {
+      _height = isLandscape ? cardHeight * 0.4 : cardHeight * 0.3;
+    }
     return SizedBox(
       child: Card(
         margin: EdgeInsets.zero,
@@ -85,7 +114,7 @@ class ProductCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
                   product.image,
-                  height: isLandscape ? cardHeight * 0.4 : cardHeight * 0.3, // Larger for landscape
+                  height: _height,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
