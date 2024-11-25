@@ -27,4 +27,25 @@ class ProductViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Add a new product
+  Future<void> addProduct(Product product) async {
+    try {
+      _isLoading = true;
+      _errorMessage = '';
+      notifyListeners();
+
+      // Insert the product via API
+      Product newProduct = await ApiService.insertProduct(product);
+
+      // Add the new product to the local list
+      _products.add(newProduct);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Error adding product: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

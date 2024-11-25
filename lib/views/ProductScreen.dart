@@ -74,6 +74,14 @@ class ProductScreen extends StatelessWidget {
           }
         }
       }),
+      floatingActionButton: ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(context, "/add_product");
+        },
+        style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        child: const Text("Add Product"),
+      ),
     );
   }
 }

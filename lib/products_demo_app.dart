@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:products_view_demo/views/ProductScreen.dart';
+import 'package:products_view_demo/views/add_product_screen.dart';
 
 
 class ProductsDemoApp extends StatelessWidget {
@@ -11,7 +12,10 @@ class ProductsDemoApp extends StatelessWidget {
       title: 'Products Demo App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const ProductScreen()
+      routes: {
+        '/': (context) => const ProductScreen(),
+        '/add_product': (context) => const AddProductScreen()
+      },
     );
   }
 }
